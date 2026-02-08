@@ -8,21 +8,39 @@
 (def here (path-directory (this-source-file)))
 (def fuse-dir (path-expand "fuse" here))
 
+;; Find FUSE include directory on macOS
+(def (find-macos-fuse-include)
+  (cond
+   ((file-exists? "/Library/Frameworks/fuse_t.framework/Headers/fuse.h")
+    "-I/Library/Frameworks/fuse_t.framework/Headers")
+   ((file-exists? "/usr/local/include/fuse/fuse.h")
+    "-I/usr/local/include/fuse")
+   ((file-exists? "/opt/homebrew/include/fuse/fuse.h")
+    "-I/opt/homebrew/include/fuse")
+   ((file-exists? "/usr/local/include/osxfuse/fuse.h")
+    "-I/usr/local/include/osxfuse")
+   (else
+    (error "Cannot find FUSE headers. Install macFUSE or FUSE-T."))))
+
+;; Find FUSE library flags on macOS
+(def (find-macos-fuse-ldflags)
+  (cond
+   ((file-exists? "/usr/local/lib/libfuse-t.dylib")
+    "-L/usr/local/lib -lfuse-t")
+   ((file-exists? "/usr/local/lib/libosxfuse.dylib")
+    "-L/usr/local/lib -losxfuse")
+   ((file-exists? "/opt/homebrew/lib/libosxfuse.dylib")
+    "-L/opt/homebrew/lib -losxfuse")
+   (else
+    (error "Cannot find FUSE library. Install macFUSE or FUSE-T."))))
+
 ;; Platform detection for FUSE include/library flags
 (def (detect-fuse-flags)
   (cond
-   ;; macOS: try FUSE-T via pkg-config first
-   ((equal? (software-type) "darwin")
-    (let ((cc-flags (cppflags "fuse-t"
-                     ;; fallback: try macFUSE framework
-                     (string-append
-                      "-I/Library/Frameworks/fuse_t.framework/Headers"
-                      " -D_FILE_OFFSET_BITS=64")))
-          (ld-flags (ldflags "fuse-t"
-                     ;; fallback: framework link
-                     "-L/usr/local/lib -lfuse-t")))
-      (values (string-append cc-flags " -D_FILE_OFFSET_BITS=64")
-              ld-flags)))
+   ;; macOS: probe for FUSE-T or macFUSE directly
+   ((equal? (cadr (system-type)) 'apple)
+    (values (string-append (find-macos-fuse-include) " -D_FILE_OFFSET_BITS=64")
+            (find-macos-fuse-ldflags)))
    ;; Linux: use pkg-config for libfuse3
    (else
     (values (string-append (cppflags "fuse3" "-I/usr/include/fuse3")
