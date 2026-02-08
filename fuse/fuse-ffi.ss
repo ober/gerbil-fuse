@@ -498,5 +498,5 @@ END-C
   ;; Main entry point
   ;; ============================================================
 
-  (define-c-lambda ffi-fuse-main (int (pointer char-string)) int "ffi_fuse_main")
+  (define-c-lambda ffi-fuse-main (nonnull-char-string-list) int "ffi_fuse_main_list")
 )

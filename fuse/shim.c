@@ -182,3 +182,10 @@ void ffi_ops_reset(void) {
 int ffi_fuse_main(int argc, char **argv) {
     return fuse_main(argc, argv, &fuse_ops, NULL);
 }
+
+/* Wrapper that counts argv entries (for use with nonnull-char-string-list) */
+int ffi_fuse_main_list(char **argv) {
+    int argc = 0;
+    while (argv[argc] != NULL) argc++;
+    return fuse_main(argc, argv, &fuse_ops, NULL);
+}
