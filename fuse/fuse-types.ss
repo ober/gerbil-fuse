@@ -33,17 +33,17 @@
 ;; Convenience constructors
 ;; ============================================================
 
-(def (make-dir-stat (mode #o755) (nlink 2) (uid 0) (gid 0))
+(def (make-dir-stat mode: (mode #o755) nlink: (nlink 2) uid: (uid 0) gid: (gid 0))
   "Create a file-stat for a directory."
   (make-file-stat (bitwise-ior S_IFDIR mode) nlink 0 uid gid
                   0 0 0 0 0 0 #f #f))
 
-(def (make-file-stat/reg (size 0) (mode #o644) (uid 0) (gid 0))
+(def (make-file-stat/reg size: (size 0) mode: (mode #o644) uid: (uid 0) gid: (gid 0))
   "Create a file-stat for a regular file."
   (make-file-stat (bitwise-ior S_IFREG mode) 1 size uid gid
                   0 0 0 0 0 0 #f #f))
 
-(def (make-symlink-stat (mode #o777) (uid 0) (gid 0) (target-len 0))
+(def (make-symlink-stat mode: (mode #o777) uid: (uid 0) gid: (gid 0) target-len: (target-len 0))
   "Create a file-stat for a symbolic link."
   (make-file-stat (bitwise-ior S_IFLNK mode) 1 target-len uid gid
                   0 0 0 0 0 0 #f #f))
